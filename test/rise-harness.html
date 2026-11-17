@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Rise embed test harness</title>
+<style>
+  /* Approximates a Rise 360 lesson column on a phone: padded text column, embed block at full column width. */
+  body { margin: 0; font: 17px/1.55 -apple-system, "Segoe UI", Arial, sans-serif; color: #2a2a2a; background: #fff; }
+  .lesson { max-width: 680px; margin: 0 auto; padding: 24px 20px 400px; }
+  h1 { font-size: 26px; line-height: 1.2; }
+  .embed { margin: 24px -20px; }
+  iframe { display: block; width: 100%; border: 0; background: #032C45; }
+  .meta { font: 13px/1.4 monospace; color: #666; padding: 6px 20px; }
+</style>
+</head>
+<body>
+  <div class="lesson">
+    <h1>Lesson 1: Reading the label before you treat</h1>
+    <p>Scroll past this paragraph to reach the activity. This page stands in for a Rise 360 lesson so the simulator can be tested inside a narrow iframe, with page scrolling above and below it.</p>
+    <p>On a phone, swiping on the truck scene should still scroll this page. Once you pick up a product, swipes turn the product instead.</p>
+    <div class="embed">
+      <!-- ?h=560 tests a short fixed-height block; default 780 -->
+      <iframe id="sim" title="Pesticide label investigation simulation" src="/" allow="autoplay; fullscreen"></iframe>
+      <div class="meta" id="meta"></div>
+    </div>
+    <p>Text after the activity. Rise page scrolling continues to work here.</p>
+    <p>Lorem ipsum filler so there is room to scroll. Lorem ipsum filler so there is room to scroll. Lorem ipsum filler so there is room to scroll.</p>
+  </div>
+<script>
+  const f = document.getElementById('sim');
+  const fixed = new URLSearchParams(location.search).get('h');
+  f.style.height = (fixed || 780) + 'px';
+  const meta = document.getElementById('meta');
+  meta.textContent = 'iframe height ' + f.style.height + (fixed ? ' (fixed)' : ' (listening for certus-label-sim:height)');
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'certus-label-sim:height' && !fixed) {
+      f.style.height = e.data.height + 'px';
+      meta.textContent = 'iframe height ' + e.data.height + 'px (set by simulator message)';
+    }
+    if (e.data && e.data.type === 'certus-label-sim:complete') meta.textContent += ' · completion received: ' + e.data.decision;
+  });
+</script>
+</body>
+</html>
